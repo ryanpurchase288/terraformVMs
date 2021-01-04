@@ -21,6 +21,15 @@ resource "azurerm_subnet" "example" {
   address_prefixes     = ["10.0.2.0/24"]
 }
 
+resource "azurerm_public_ip" "example" {
+  name                    = "test-pip"
+  location                = var.location
+  resource_group_name     = azurerm_resource_group.example.name
+  allocation_method       = "Dynamic"
+  idle_timeout_in_minutes = 30
+
+}
+
 resource "azurerm_network_interface" "example" {
   name                = "example-nic"
   location            = azurerm_resource_group.example.location
@@ -30,6 +39,7 @@ resource "azurerm_network_interface" "example" {
     name                          = "internal"
     subnet_id                     = azurerm_subnet.example.id
     private_ip_address_allocation = "Dynamic"
+    public_ip_address_id          = azurerm_public_ip.example.id
   }
 }
 
@@ -60,4 +70,14 @@ resource "azurerm_linux_virtual_machine" "example" {
     version   = "latest"
   }
 }
+
+data "azurerm_public_ip" "example" {
+  name                = azurerm_public_ip.example.name
+  resource_group_name = azurerm_resource_group.example.name
+}
+
+output "public_ip_address" {
+  value = data.azurerm_public_ip.example.ip_address
+}
+
 
